@@ -5,13 +5,24 @@
 package frc.robot.Subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotMap;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class DriveSubsystem extends SubsystemBase {
+  public class Map {
+    // Can Ids
+    public static final int leftMotor1_CAN = 4;
+    public static final int leftMotor2_CAN = 1;
+    public static final int leftMotor3_CAN = 2;
+    public static final int rightMotor1_CAN = 3;
+    public static final int rightMotor2_CAN = 12;
+    public static final int rightMotor3_CAN = 13;
+  }
+
   private WPI_VictorSPX leftDriveMotor1;
   private WPI_VictorSPX leftDriveMotor2;
   private WPI_VictorSPX leftDriveMotor3;
@@ -25,12 +36,12 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
-    leftDriveMotor1 = new WPI_VictorSPX(RobotMap.leftDriveMotor1_CAN);
-    rightDriveMotor1 = new WPI_VictorSPX(RobotMap.rightDriveMotor1_CAN);
-    rightDriveMotor2 = new WPI_VictorSPX(RobotMap.rightDriveMotor2_CAN); 
-    leftDriveMotor2 = new WPI_VictorSPX(RobotMap.leftDriveMotor2_CAN); 
-    rightDriveMotor3 = new WPI_VictorSPX(RobotMap.rightDriveMotor3_CAN); 
-    leftDriveMotor3 = new WPI_VictorSPX(RobotMap.leftDriveMotor3_CAN); 
+    leftDriveMotor1 = new WPI_VictorSPX(Map.leftMotor1_CAN);
+    rightDriveMotor1 = new WPI_VictorSPX(Map.rightMotor1_CAN);
+    rightDriveMotor2 = new WPI_VictorSPX(Map.rightMotor2_CAN); 
+    leftDriveMotor2 = new WPI_VictorSPX(Map.leftMotor2_CAN); 
+    rightDriveMotor3 = new WPI_VictorSPX(Map.rightMotor3_CAN); 
+    leftDriveMotor3 = new WPI_VictorSPX(Map.leftMotor3_CAN); 
 
     
 
@@ -48,8 +59,31 @@ public class DriveSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public void drive(double speed, double rotation){
+  public void driveArcade(double speed, double rotation){
     drivetrain.arcadeDrive(speed, rotation);
-
   }
+
+  public void driveTank(double speedLeft, double speedRight){
+    drivetrain.tankDrive(speedLeft, speedRight);
+  }
+
+  //#region Commands
+
+  public CommandBase driveArcadeCommand(CommandXboxController controller){
+    return this.run(() -> {
+      double speed = -MathUtil.applyDeadband(controller.getRawAxis(0), 0.1);
+      double rotation = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
+      driveArcade(speed, rotation);
+    });
+  }
+
+  public CommandBase driveTankCommand(CommandXboxController controller){
+    return this.run(() -> {
+      double speedLeft = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
+      double speedRight = MathUtil.applyDeadband(controller.getRawAxis(5), 0.1);
+      driveTank(speedLeft, speedRight);
+    });
+  }
+
+  //#endregion
 }
