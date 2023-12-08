@@ -32,7 +32,7 @@ public class ShoulderSubsystem extends SubsystemBase {
 
   /** Creates a new ShoulderSubsystem. */
   public ShoulderSubsystem() {
-    shoulderAngle1 = new WPI_VictorSPX(Map.MOTOR1_CAN);
+    shoulderAngle1 = new WPI_VictorSPX(Map.MOTOR1_CAN)
     shoulderAngle2 = new WPI_VictorSPX(Map.MOTOR2_CAN);
     shoulderAngle1.setNeutralMode(NeutralMode.Brake);
     shoulderAngle2.setNeutralMode(NeutralMode.Brake);
