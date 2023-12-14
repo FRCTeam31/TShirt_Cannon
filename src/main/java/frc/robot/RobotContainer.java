@@ -12,7 +12,6 @@ import frc.robot.Subsystems.RevolverSubsystem;
 import frc.robot.Subsystems.ShoulderSubsystem;
 
 public class RobotContainer {
-
   public DriveSubsystem Drive;
   public ShoulderSubsystem Shoulder;
   public RevolverSubsystem Revolver;

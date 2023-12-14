@@ -73,7 +73,7 @@ public class ShoulderSubsystem extends SubsystemBase {
   public CommandBase controlWithTriggersCommand(CommandXboxController controller) {
     return this.run(()->{
       double angleSpeed = MathUtil.applyDeadband((controller.getRawAxis(2) - 
-      controller.getRawAxis(3)) * Map.SPEED_COEFF, 0.1);
+        controller.getRawAxis(3)) * Map.SPEED_COEFF, 0.1);
       changeShoulderAngle(angleSpeed);
     });
   }

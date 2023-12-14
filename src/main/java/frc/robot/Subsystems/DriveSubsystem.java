@@ -49,9 +49,7 @@ public class DriveSubsystem extends SubsystemBase {
     leftSide = new MotorControllerGroup(leftDriveMotor1, leftDriveMotor2, leftDriveMotor3);
     rightSide = new MotorControllerGroup(rightDriveMotor1, rightDriveMotor2, rightDriveMotor3);
 
-    drivetrain = new DifferentialDrive(leftSide, rightSide);
-    
-   
+    drivetrain = new DifferentialDrive(rightSide, leftSide); /* reversed purposefully */ 
   }
 
   @Override
@@ -80,7 +78,7 @@ public class DriveSubsystem extends SubsystemBase {
   public CommandBase driveTankCommand(CommandXboxController controller){
     return this.run(() -> {
       double speedLeft = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
-      double speedRight = MathUtil.applyDeadband(controller.getRawAxis(5), 0.1);
+      double speedRight = MathUtil.applyDeadband(-controller.getRawAxis(5), 0.1);
       driveTank(speedLeft, speedRight);
     });
   }
