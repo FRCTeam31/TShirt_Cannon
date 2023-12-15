@@ -11,6 +11,7 @@ import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,13 +25,13 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final int MOTOR_CAN = 8;
     public static final double MOTOR_SPEED_COEFF = 0.5;
 
-    public static final double MOTOR_kP = 0.0;
+    public static final double MOTOR_kP = 1.4;
     public static final double MOTOR_kI = 0.0;
     public static final double MOTOR_kD = 0.0;
     public static final double MOTOR_kF = 0.0;
 
-    public static final double MOTOR_MAGIC_ACCEL = 1000; // Sensor units per 100ms, per second
-    public static final double MOTOR_MAGIC_CRUISE = 1000; // Sensor units per 100ms
+    public static final double MOTOR_MAGIC_ACCEL = 2000; // Sensor units per 100ms, per second
+    public static final double MOTOR_MAGIC_CRUISE = 1500; // Sensor units per 100ms
     public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
 
     public static final int SOLENOID_CHANNEL = 1;
@@ -38,6 +39,7 @@ public class RevolverSubsystem extends SubsystemBase {
 
   private TalonSRX motor;
   private Solenoid fireSolenoid;
+  private PneumaticsControlModule pcm;
 
   /** Creates a new RevolverSubsytem. */
   public RevolverSubsystem() {
@@ -64,7 +66,8 @@ public class RevolverSubsystem extends SubsystemBase {
 
     motor.setSelectedSensorPosition(0);
 
-    fireSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, Map.SOLENOID_CHANNEL);
+    pcm = new PneumaticsControlModule(30);
+    fireSolenoid = pcm.makeSolenoid(Map.SOLENOID_CHANNEL);
   }
 
   @Override
