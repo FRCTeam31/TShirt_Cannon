@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.Subsystems;
+package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -12,10 +12,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utilities.CTREConverter;
@@ -99,24 +98,24 @@ public class RevolverSubsystem extends SubsystemBase {
 
   //#region Commands
 
-  public CommandBase fireSequenceCommand(int power) {
+  public Command fireSequenceCommand(int power) {
     return fireCommand(true)
       .andThen(Commands.waitSeconds(0.01 * power))
       .andThen(fireCommand(false));
   }
 
-  public CommandBase fireCommand(boolean open) {
+  public Command fireCommand(boolean open) {
     return this.runOnce(() -> setFireSolenoid(open));
   }
 
-  public CommandBase revolveForward(){
+  public Command revolveForward(){
     return this.runOnce(()->{
       motor.setSelectedSensorPosition(0);
       setRevolverPositionTarget(4096);
     });
   }
 
-  public CommandBase revolveBackward(){
+  public Command revolveBackward(){
     return this.runOnce(()->{
       motor.setSelectedSensorPosition(0);
       setRevolverPositionTarget(-4096);
