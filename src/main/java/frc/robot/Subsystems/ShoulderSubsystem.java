@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -11,6 +7,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,8 +29,9 @@ public class ShoulderSubsystem extends SubsystemBase {
   private WPI_VictorSPX shoulderAngle2;
   private CANcoder shoulderCoder;
 
-  /** Creates a new ShoulderSubsystem. */
-  public ShoulderSubsystem() {
+  /** Creates a new ShoulderSubsystem. 
+ * @param isReal */
+  public ShoulderSubsystem(boolean isReal) {
     shoulderAngle1 = new WPI_VictorSPX(Map.MOTOR1_CAN);
     shoulderAngle2 = new WPI_VictorSPX(Map.MOTOR2_CAN);
     shoulderAngle1.setNeutralMode(NeutralMode.Brake);
@@ -48,13 +46,13 @@ public class ShoulderSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    var currentAngle = shoulderCoder.getAbsolutePosition();
-    SmartDashboard.putNumber("Shoulder Angle", currentAngle.getValueAsDouble());
+    var currentAngle = Rotation2d.fromRotations(shoulderCoder.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber("Shoulder Angle", currentAngle.getDegrees());
   }
 
   public void changeShoulderAngle(double angleSpeed){
     // Current angle from the encoder
-    var currentAngle = shoulderCoder.getAbsolutePosition().getValueAsDouble();
+    var currentAngle = Rotation2d.fromRotations(shoulderCoder.getAbsolutePosition().getValueAsDouble()).getDegrees();
 
     // If the angle is oustide the acceptable bounds then set rotation to 0
     if (angleSpeed > 0 && currentAngle >= Map.UPPER_LIMIT)

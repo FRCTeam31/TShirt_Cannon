@@ -1,30 +1,26 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.RevolverSubsystem;
 import frc.robot.subsystems.ShoulderSubsystem;
+import frc.robot.subsystems.Drive.DriveSubsystem;
 
 public class RobotContainer {
-  public DriveSubsystem Drive;
-  public ShoulderSubsystem Shoulder;
-  public RevolverSubsystem Revolver;
-  public CommandXboxController controller;
+  public static DriveSubsystem Drive;
+  public static ShoulderSubsystem Shoulder;
+  public static RevolverSubsystem Revolver;
+  public static CommandXboxController controller;
 
-  public RobotContainer() {
-    Drive = new DriveSubsystem();
-    Shoulder = new ShoulderSubsystem();
-    Revolver = new RevolverSubsystem();
-    configureBindings();
+  public static void init(boolean isReal) {
+    Drive = new DriveSubsystem(isReal);
+    Shoulder = new ShoulderSubsystem(isReal);
+    Revolver = new RevolverSubsystem(isReal);
+
+    // Creates command bindings to controller actions
+    configureControllerBindings();
   }
 
-  private void configureBindings() {
+  private static void configureControllerBindings() {
     controller = new CommandXboxController(0);
     
     Drive.setDefaultCommand(Drive.driveTankCommand(controller));
@@ -33,14 +29,12 @@ public class RobotContainer {
     controller.rightBumper().onTrue(Revolver.revolveForward());
     controller.leftBumper().onTrue(Revolver.revolveBackward());
 
-    // controller.b().onTrue(Revolver.fireSequenceCommand(25));
-    // controller.y().onTrue(Revolver.fireSequenceCommand(50));
-    // controller.x().onTrue(Revolver.fireSequenceCommand(100));
-    controller.a().onTrue(Revolver.fireCommand(true))
-      .onFalse(Revolver.fireCommand(false));
-  }
+    // TODO: Can we create a command which fires, revolves, fires, revolves, etc. while a button is held?
 
-  public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    // Only allow firing when start AND a POV direction are pressed at the same time
+    controller.start().and(controller.pov(0)).onTrue(Revolver.fireSequenceCommand(100));
+    controller.start().and(controller.pov(90)).onTrue(Revolver.fireSequenceCommand(50));
+    controller.start().and(controller.pov(270)).onTrue(Revolver.fireSequenceCommand(50));
+    controller.start().and(controller.pov(180)).onTrue(Revolver.fireSequenceCommand(20));
   }
 }

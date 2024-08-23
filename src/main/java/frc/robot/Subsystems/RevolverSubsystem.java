@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -40,8 +36,9 @@ public class RevolverSubsystem extends SubsystemBase {
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
 
-  /** Creates a new RevolverSubsytem. */
-  public RevolverSubsystem() {
+  /** Creates a new RevolverSubsytem. 
+ * @param isReal */
+  public RevolverSubsystem(boolean isReal) {
     motor = new TalonSRX(Map.MOTOR_CAN);
     motor.clearStickyFaults();
     motor.configFactoryDefault();
@@ -98,9 +95,14 @@ public class RevolverSubsystem extends SubsystemBase {
 
   //#region Commands
 
-  public Command fireSequenceCommand(int power) {
+  /**
+   * Creates a fire sequence command which opens the solenoid for a given period of time
+   * @param powerInMs The time in milliseconds to open the solenoid
+   * @return
+   */
+  public Command fireSequenceCommand(int powerInMs) {
     return fireCommand(true)
-      .andThen(Commands.waitSeconds(0.01 * power))
+      .andThen(Commands.waitSeconds(0.01 * powerInMs))
       .andThen(fireCommand(false));
   }
 
