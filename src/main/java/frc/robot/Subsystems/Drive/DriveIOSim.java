@@ -1,7 +1,6 @@
 package frc.robot.subsystems.Drive;
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import frc.robot.interfaces.IDriveIO;
 import frc.robot.sim.MotorSim;
 
 public class DriveIOSim implements IDriveIO {

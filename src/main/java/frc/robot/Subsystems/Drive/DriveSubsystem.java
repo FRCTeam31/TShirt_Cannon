@@ -4,8 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.interfaces.IDriveIO;
-import frc.robot.interfaces.IDriveIO.DriveIOOutputs;
+import frc.robot.subsystems.Drive.IDriveIO.DriveIOOutputs;
 
 public class DriveSubsystem extends SubsystemBase {
   public class Map {
