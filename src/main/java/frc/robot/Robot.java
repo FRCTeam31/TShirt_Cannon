@@ -16,7 +16,7 @@ public class Robot extends LoggedRobot {
   @SuppressWarnings("resource")
   @Override
   public void robotInit() {
-    new RobotContainer(); // Creates new RobotContainer
+    RobotContainer.init(isReal()); // Initializes RobotContainer
 
     Logger.recordMetadata("ProjectName", "TShirtCannon"); // Set a metadata value
 

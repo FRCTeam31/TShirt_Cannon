@@ -5,11 +5,13 @@ import org.littletonrobotics.junction.AutoLog;
 import frc.robot.subsystems.Drive.DriveSubsystem.DriveMode;
 
 public interface IDriveIO {
+    @AutoLog
     public static class DriveIOInputs {
         public double leftSpeed;
         public double rightSpeed;
     }
 
+    @AutoLog
     public static class DriveIOOutputs {
         public DriveMode driveMode;
         
@@ -22,11 +24,7 @@ public interface IDriveIO {
         public double rightSpeed;   
     }
 
-    public default DriveIOInputs getInputs() {
-        return null;
-    }
+    public DriveIOInputs getInputs();
 
-    public default void setOutputs(DriveIOOutputs outputs) {
-        // function stub
-    }
+    public void setOutputs(DriveIOOutputs outputs);
 }

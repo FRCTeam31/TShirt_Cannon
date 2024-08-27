@@ -5,7 +5,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 public class DriveIOReal implements IDriveIO {
-
     private WPI_VictorSPX leftDriveMotor1;
     private WPI_VictorSPX leftDriveMotor2;
     private WPI_VictorSPX leftDriveMotor3;
