@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
@@ -122,6 +123,10 @@ public class RevolverSubsystem extends SubsystemBase {
       motor.setSelectedSensorPosition(0);
       setRevolverPositionTarget(-4096);
     });
+  }
+
+  public Command stopMotors() {
+    return this.runOnce(() -> motor.set(TalonSRXControlMode.PercentOutput, 0));
   }
 
   //#end

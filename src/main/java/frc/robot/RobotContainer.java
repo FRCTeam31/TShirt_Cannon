@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.RevolverSubsystem;
 import frc.robot.subsystems.ShoulderSubsystem;
@@ -29,7 +30,13 @@ public class RobotContainer {
     controller.rightBumper().onTrue(Revolver.revolveForward());
     controller.leftBumper().onTrue(Revolver.revolveBackward());
 
-    // TODO: Can we create a command which fires, revolves, fires, revolves, etc. while a button is held?
+    // TODO: This needs to be tested!!!!
+    controller.a().and(controller.b()).whileTrue(
+      Commands.run(() -> Revolver
+        .fireSequenceCommand(20)
+        .andThen(Revolver.revolveForward())
+      )
+    ).onFalse(Revolver.stopMotors().andThen(Revolver.fireCommand(false)));
 
     // Only allow firing when start AND a POV direction are pressed at the same time
     controller.start().and(controller.pov(0)).onTrue(Revolver.fireSequenceCommand(100));
