@@ -21,7 +21,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("ProjectName", "TShirtCannon"); // Set a metadata value
 
     if (isReal()) {
-        Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+        // Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
         new PowerDistribution(1, ModuleType.kCTRE); // Enables power distribution logging
     } else {

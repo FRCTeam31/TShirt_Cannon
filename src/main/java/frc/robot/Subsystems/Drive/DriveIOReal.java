@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Drive;
 
+import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -15,12 +16,14 @@ public class DriveIOReal implements IDriveIO {
 
     public DriveIOReal() {
         leftDriveMotor1 = new WPI_VictorSPX(DriveSubsystem.Map.leftMotor1_CAN);
+        leftDriveMotor1.configOpenloopRamp(2);
         leftDriveMotor2 = new WPI_VictorSPX(DriveSubsystem.Map.leftMotor2_CAN); 
         leftDriveMotor2.follow(leftDriveMotor1);
         leftDriveMotor3 = new WPI_VictorSPX(DriveSubsystem.Map.leftMotor3_CAN); 
         leftDriveMotor3.follow(leftDriveMotor1);
 
         rightDriveMotor1 = new WPI_VictorSPX(DriveSubsystem.Map.rightMotor1_CAN);
+        rightDriveMotor1.configOpenloopRamp(2);
         rightDriveMotor2 = new WPI_VictorSPX(DriveSubsystem.Map.rightMotor2_CAN); 
         rightDriveMotor2.follow(rightDriveMotor1);
         rightDriveMotor3 = new WPI_VictorSPX(DriveSubsystem.Map.rightMotor3_CAN); 
@@ -28,7 +31,6 @@ public class DriveIOReal implements IDriveIO {
 
         drivetrain = new DifferentialDrive(leftDriveMotor1, rightDriveMotor1); /* reversed purposefully */ 
     }
-
     @Override
     public DriveIOInputs getInputs() {
         var inputs = new DriveIOInputs();

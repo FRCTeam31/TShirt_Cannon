@@ -23,7 +23,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   private IDriveIO driveIo;
-  private DriveIOOutputs driveOutputs;
+  private DriveIOOutputs driveOutputs = new DriveIOOutputs();
 
   /** Creates a new DriveSubsystem. 
    * @param isReal */
@@ -52,8 +52,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void driveTank(double speedLeft, double speedRight){
     driveOutputs.driveMode = DriveMode.kTank;
-    driveOutputs.leftSpeed = speedLeft;
-    driveOutputs.rightSpeed = speedRight;
+    driveOutputs.leftSpeed = -speedLeft;
+    driveOutputs.rightSpeed = -speedRight;
+  
   }
 
   //#region Commands
@@ -63,6 +64,13 @@ public class DriveSubsystem extends SubsystemBase {
       double speed = -MathUtil.applyDeadband(controller.getRawAxis(0), 0.1);
       double rotation = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
       driveArcade(speed, rotation);
+    });
+  }
+
+  public Command rotateArcadeCommand(CommandXboxController controller) {
+    return this.run(() -> {
+      double rotation = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
+      driveArcade(rotation, 0);
     });
   }
 

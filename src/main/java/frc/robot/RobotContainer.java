@@ -26,16 +26,18 @@ public class RobotContainer {
     
     Drive.setDefaultCommand(Drive.driveTankCommand(controller));
     Shoulder.setDefaultCommand(Shoulder.controlWithTriggersCommand(controller));
+
     
     controller.rightBumper().onTrue(Revolver.revolveForward());
     controller.leftBumper().onTrue(Revolver.revolveBackward());
 
-    // TODO: This needs to be tested!!!!
-    controller.a().and(controller.b()).whileTrue(
-      Commands.run(() -> Revolver
-        .fireSequenceCommand(20)
-        .andThen(Revolver.revolveForward())
-      )
+    // Auto-fire, turret mode
+    controller.leftBumper().and(controller.rightBumper()).whileTrue(
+      Commands.repeatingSequence(
+        Revolver.fireSequenceCommand(20)
+        .andThen(Revolver.revolveForward()
+        .andThen(Commands.waitSeconds(0.75))))
+        .alongWith(Drive.rotateArcadeCommand(controller))
     ).onFalse(Revolver.stopMotors().andThen(Revolver.fireCommand(false)));
 
     // Only allow firing when start AND a POV direction are pressed at the same time

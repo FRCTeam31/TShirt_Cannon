@@ -103,7 +103,7 @@ public class RevolverSubsystem extends SubsystemBase {
    */
   public Command fireSequenceCommand(int powerInMs) {
     return fireCommand(true)
-      .andThen(Commands.waitSeconds(0.01 * powerInMs))
+      .andThen(Commands.waitSeconds(0.001 * powerInMs))
       .andThen(fireCommand(false));
   }
 
