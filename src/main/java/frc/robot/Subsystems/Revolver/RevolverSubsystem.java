@@ -1,19 +1,13 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.Revolver;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.PneumaticsControlModule;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.Revolver.IRevolverIO.RevolverIOInputs;
+import frc.robot.subsystems.Revolver.IRevolverIO.RevolverIOOutputs;
 import frc.robot.utilities.CTREConverter;
 
 public class RevolverSubsystem extends SubsystemBase {
@@ -33,42 +27,25 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final int SOLENOID_CHANNEL = 1;
   }
 
-  private TalonSRX motor;
-  private Solenoid fireSolenoid;
-  private PneumaticsControlModule pcm;
+  private IRevolverIO revolverIo;
+  private RevolverIOOutputs revolverOutputs = new RevolverIOOutputs();
+  private RevolverIOInputs revolverInputs = new RevolverIOInputs();
 
   /** Creates a new RevolverSubsytem. 
  * @param isReal */
-  public RevolverSubsystem(boolean isReal) {
-    motor = new TalonSRX(Map.MOTOR_CAN);
-    motor.clearStickyFaults();
-    motor.configFactoryDefault();
-    motor.setNeutralMode(NeutralMode.Brake);
-
-    // Configure Talon sensor
-    motor.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.QuadEncoder, 0, 20);
-    motor.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 20);
-
-    // Configure PIDF for Motion Magic
-    motor.selectProfileSlot(0, 0);
-    motor.config_kP(0, Map.MOTOR_kP);
-    motor.config_kI(0, Map.MOTOR_kI);
-    motor.config_kD(0, Map.MOTOR_kD);
-    motor.config_kF(0, Map.MOTOR_kF);
-
-    // Configure motion magic parameters
-    motor.configMotionAcceleration(Map.MOTOR_MAGIC_ACCEL);
-    motor.configMotionCruiseVelocity(Map.MOTOR_MAGIC_CRUISE);
-    motor.configMotionSCurveStrength(Map.MOTOR_MAGIC_S_CURVE_STRENGTH);
-
-    motor.setSelectedSensorPosition(0);
-
-    pcm = new PneumaticsControlModule(30);
-    fireSolenoid = pcm.makeSolenoid(Map.SOLENOID_CHANNEL);
+  public RevolverSubsystem(boolean isReal){
+   if (isReal){
+    revolverIo = new RevolverIOReal();
+   } else {
+    // revolverIo = new RevolverIOSim();
+   }
   }
 
   @Override
   public void periodic() {
+    revolverIo.setOutputs(revolverOutputs);
+    revolverInputs = revolverIo.getInputs();
+
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("Revolver Angle Pos", getRevolverRotation().getDegrees());
   }
@@ -79,19 +56,21 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   public double getRevolverPosition() {
-    return motor.getSelectedSensorPosition();
+    return revolverInputs.SensorPosition;
   }
 
   public void setRevolverSpeed(double speed) {
-    motor.set(ControlMode.PercentOutput, speed * Map.MOTOR_SPEED_COEFF);
+    revolverOutputs.RevolverControlMode = ControlMode.PercentOutput;
+    revolverOutputs.MotorOutput = speed * Map.MOTOR_SPEED_COEFF;
   }
 
   public void setRevolverPositionTarget(double target) {
-    motor.set(ControlMode.MotionMagic, target);
+    revolverOutputs.RevolverControlMode = ControlMode.MotionMagic;
+    revolverOutputs.MotorOutput = target;
   }
 
   public void setFireSolenoid(boolean open) {
-    fireSolenoid.set(open);
+    revolverOutputs.RevolverSolenoidOpen = open;
   }
 
   //#region Commands
@@ -113,20 +92,20 @@ public class RevolverSubsystem extends SubsystemBase {
 
   public Command revolveForward(){
     return this.runOnce(()->{
-      motor.setSelectedSensorPosition(0);
+      revolverIo.setSensorPosition(0);
       setRevolverPositionTarget(4096);
     });
   }
 
   public Command revolveBackward(){
     return this.runOnce(()->{
-      motor.setSelectedSensorPosition(0);
+      revolverIo.setSensorPosition(0);
       setRevolverPositionTarget(-4096);
     });
   }
 
   public Command stopMotors() {
-    return this.runOnce(() -> motor.set(TalonSRXControlMode.PercentOutput, 0));
+    return this.runOnce(() -> setRevolverSpeed(0));
   }
 
   //#end
