@@ -25,22 +25,10 @@ public class ShoulderSubsystem extends SubsystemBase {
     public static final double SPEED_COEFF = 0.5;
   }
 
-  private WPI_VictorSPX shoulderAngle1;
-  private WPI_VictorSPX shoulderAngle2;
-  private CANcoder shoulderCoder;
-
   /** Creates a new ShoulderSubsystem. 
  * @param isReal */
   public ShoulderSubsystem(boolean isReal) {
-    shoulderAngle1 = new WPI_VictorSPX(Map.MOTOR1_CAN);
-    shoulderAngle2 = new WPI_VictorSPX(Map.MOTOR2_CAN);
-    shoulderAngle1.setNeutralMode(NeutralMode.Brake);
-    shoulderAngle2.setNeutralMode(NeutralMode.Brake);
 
-    shoulderCoder = new CANcoder(Map.SHOULDERCODER_CAN);
-    var cancoderConfig = new CANcoderConfiguration();
-    cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-    shoulderCoder.getConfigurator().apply(cancoderConfig);
   }
 
   @Override
