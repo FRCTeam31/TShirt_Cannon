@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.Shoulder.IShoulderIO.ShoulderIOInputs;
+import frc.robot.subsystems.Shoulder.IShoulderIO.ShoulderIOOutputs;
 
 public class ShoulderSubsystem extends SubsystemBase {
   public class Map {
@@ -24,35 +26,41 @@ public class ShoulderSubsystem extends SubsystemBase {
     //Speed Coefficents
     public static final double SPEED_COEFF = 0.5;
   }
+ private IShoulderIO shoulderIo;
+  private ShoulderIOInputs shoulderInputs = new ShoulderIOInputs(); 
+  private ShoulderIOOutputs shoulderOutputs = new ShoulderIOOutputs();
 
   /** Creates a new ShoulderSubsystem. 
  * @param isReal */
   public ShoulderSubsystem(boolean isReal) {
-
+    if (isReal){
+      shoulderIo = new ShoulderIOReal();
+    } else{
+      // This is where the simulated version will be
+    }
   }
 
   @Override
   public void periodic() {
+    shoulderIo.setOutputs(shoulderOutputs);
+    shoulderInputs = shoulderIo.getInputs();
     // This method will be called once per scheduler run
-    var currentAngle = Rotation2d.fromRotations(shoulderCoder.getAbsolutePosition().getValueAsDouble());
+    var currentAngle = shoulderInputs.ShoulderRotation;
     SmartDashboard.putNumber("Shoulder Angle", currentAngle.getDegrees());
   }
 
-  public void changeShoulderAngle(double angleSpeed){
-    // Current angle from the encoder
-    var currentAngle = Rotation2d.fromRotations(shoulderCoder.getAbsolutePosition().getValueAsDouble()).getDegrees();
-
-    // If the angle is oustide the acceptable bounds then set rotation to 0
-    if (angleSpeed > 0 && currentAngle >= Map.UPPER_LIMIT)
-      angleSpeed = Math.min(0, angleSpeed);
-
-    if (angleSpeed < 0 && currentAngle <= Map.LOWER_LIMIT)
-      angleSpeed = Math.max(0, angleSpeed);
-
-    //Set motor speed
-    shoulderAngle1.set(angleSpeed);
-    shoulderAngle2.set(angleSpeed);
+  public double getShoulderAngle() {
+    return shoulderInputs.ShoulderRotation.getDegrees();
   }
+
+  // public void changeShoulderAngle(double angleSpeed){
+  //   // Current angle from the encoder
+  //   var currentAngle = shoulderInputs.ShoulderRotation.getDegrees();
+
+    
+    
+    
+  // }
 
   //#region Commands
 
@@ -60,7 +68,7 @@ public class ShoulderSubsystem extends SubsystemBase {
     return this.run(()->{
       double angleSpeed = MathUtil.applyDeadband((controller.getRawAxis(2) - 
         controller.getRawAxis(3)) * Map.SPEED_COEFF, 0.1);
-      changeShoulderAngle(angleSpeed);
+      shoulderOutputs.ShoulderAngleSpeed = angleSpeed;
     });
   }
 
