@@ -14,8 +14,6 @@ public class ShoulderIOReal implements IShoulderIO {
   private WPI_VictorSPX shoulderAngle2;
   private CANcoder shoulderCoder;
 
-  private ShoulderSubsystem shoulderSubsystem;
-
   public ShoulderIOReal() {
     shoulderAngle1 = new WPI_VictorSPX(ShoulderSubsystem.Map.MOTOR1_CAN);
     shoulderAngle2 = new WPI_VictorSPX(ShoulderSubsystem.Map.MOTOR2_CAN);
@@ -39,12 +37,19 @@ public class ShoulderIOReal implements IShoulderIO {
 
   @Override
   public void setOutputs(ShoulderIOOutputs outputs) {
-    // If the angle is oustide the acceptable bounds then set rotation to 0
-    if (outputs.ShoulderAngleSpeed > 0 && shoulderSubsystem.getShoulderAngle() >= ShoulderSubsystem.Map.UPPER_LIMIT)
-    outputs.ShoulderAngleSpeed = Math.min(0, outputs.ShoulderAngleSpeed);
+    var inputs = getInputs();
 
-    if (outputs.ShoulderAngleSpeed < 0 && shoulderSubsystem.getShoulderAngle() <= ShoulderSubsystem.Map.LOWER_LIMIT)
-    outputs.ShoulderAngleSpeed = Math.max(0, outputs.ShoulderAngleSpeed);
+    var atUpperLimit = inputs.ShoulderRotation.getDegrees() >= ShoulderSubsystem.Map.UPPER_LIMIT;
+    var atLowerLimit = inputs.ShoulderRotation.getDegrees() <= ShoulderSubsystem.Map.LOWER_LIMIT;
+    var movingUp = outputs.ShoulderAngleSpeed > 0;
+    var movingDown = outputs.ShoulderAngleSpeed < 0;
+
+    // If the angle is oustide the acceptable bounds then set rotation to 0
+    if (movingUp && atUpperLimit)
+      outputs.ShoulderAngleSpeed = Math.min(0, outputs.ShoulderAngleSpeed);
+
+    if (movingDown && atLowerLimit)
+      outputs.ShoulderAngleSpeed = Math.max(0, outputs.ShoulderAngleSpeed);
 
     shoulderAngle1.set(outputs.ShoulderAngleSpeed);
     shoulderAngle2.set(outputs.ShoulderAngleSpeed);

@@ -11,7 +11,7 @@ import frc.robot.subsystems.Revolver.IRevolverIO.RevolverIOOutputs;
 import frc.robot.utilities.CTREConverter;
 
 public class RevolverSubsystem extends SubsystemBase {
-  public class Map {
+  public static class Map {
     public static final int MOTOR_CAN = 8;
     public static final double MOTOR_SPEED_COEFF = 0.5;
 

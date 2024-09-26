@@ -8,15 +8,15 @@ public interface IRevolverIO {
     
     @AutoLog
     public static class RevolverIOInputs{
-        public double SensorPosition;
+        public double SensorPosition = 0;
     }
 
     @AutoLog
     public static class RevolverIOOutputs{ 
-        public double MotorOutput;
-        public ControlMode RevolverControlMode;
-        public double SensorPosition;
-        public boolean RevolverSolenoidOpen;
+        public double MotorOutput = 0;
+        public ControlMode RevolverControlMode = ControlMode.PercentOutput;
+        public double SensorPosition = 0;
+        public boolean RevolverSolenoidOpen = false;
     }
 
     public RevolverIOInputs getInputs();

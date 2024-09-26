@@ -7,12 +7,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public interface IShoulderIO {
     @AutoLog
     public static class ShoulderIOInputs{
-        public Rotation2d ShoulderRotation;
+        public Rotation2d ShoulderRotation = Rotation2d.fromDegrees(0);
     }
 
     @AutoLog
     public static class ShoulderIOOutputs{ 
-        public double ShoulderAngleSpeed;
+        public double ShoulderAngleSpeed = 0;
     }
 
     public ShoulderIOInputs getInputs();

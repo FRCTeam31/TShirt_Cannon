@@ -9,12 +9,12 @@ import frc.robot.subsystems.Shoulder.IShoulderIO.ShoulderIOInputs;
 import frc.robot.subsystems.Shoulder.IShoulderIO.ShoulderIOOutputs;
 
 public class ShoulderSubsystem extends SubsystemBase {
-  public class Map {
+  public static class Map {
     public static final int MOTOR1_CAN = 22;
     public static final int MOTOR2_CAN = 21;
     public static final int SHOULDERCODER_CAN = 20;
-    public static final double UPPER_LIMIT = 271.05;
-    public static final double LOWER_LIMIT = 224.47;
+    public static final double UPPER_LIMIT = -90;
+    public static final double LOWER_LIMIT = -137.72;
 
     //Speed Coefficents
     public static final double SPEED_COEFF = 0.5;
