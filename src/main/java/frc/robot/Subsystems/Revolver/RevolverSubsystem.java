@@ -37,7 +37,7 @@ public class RevolverSubsystem extends SubsystemBase {
    if (isReal){
     revolverIo = new RevolverIOReal();
    } else {
-    // revolverIo = new RevolverIOSim();
+    revolverIo = new RevolverIOSim();
    }
   }
 

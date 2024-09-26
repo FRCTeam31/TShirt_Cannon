@@ -1,13 +1,6 @@
 package frc.robot.subsystems.Shoulder;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,7 +29,7 @@ public class ShoulderSubsystem extends SubsystemBase {
     if (isReal){
       shoulderIo = new ShoulderIOReal();
     } else{
-      // This is where the simulated version will be
+      shoulderIo = new ShoulderIOSim();
     }
   }
 

@@ -16,7 +16,7 @@ public class ShoulderIOReal implements IShoulderIO {
 
   private ShoulderSubsystem shoulderSubsystem;
 
-    public ShoulderIOReal() {
+  public ShoulderIOReal() {
     shoulderAngle1 = new WPI_VictorSPX(ShoulderSubsystem.Map.MOTOR1_CAN);
     shoulderAngle2 = new WPI_VictorSPX(ShoulderSubsystem.Map.MOTOR2_CAN);
     shoulderAngle1.setNeutralMode(NeutralMode.Brake);
@@ -28,27 +28,25 @@ public class ShoulderIOReal implements IShoulderIO {
     shoulderCoder.getConfigurator().apply(cancoderConfig);
   }
 
-    @Override
-    public ShoulderIOInputs getInputs() {
-        var inputs = new ShoulderIOInputs();
+  @Override
+  public ShoulderIOInputs getInputs() {
+      var inputs = new ShoulderIOInputs();
 
-        inputs.ShoulderRotation = Rotation2d.fromRotations(shoulderCoder.getAbsolutePosition().getValueAsDouble());
+      inputs.ShoulderRotation = Rotation2d.fromRotations(shoulderCoder.getAbsolutePosition().getValueAsDouble());
 
-        return inputs;
-    }
+      return inputs;
+  }
 
-    @Override
-    public void setOutputs(ShoulderIOOutputs outputs) {
-// If the angle is oustide the acceptable bounds then set rotation to 0
-if (outputs.ShoulderAngleSpeed > 0 && shoulderSubsystem.getShoulderAngle() >= ShoulderSubsystem.Map.UPPER_LIMIT)
-outputs.ShoulderAngleSpeed = Math.min(0, outputs.ShoulderAngleSpeed);
+  @Override
+  public void setOutputs(ShoulderIOOutputs outputs) {
+    // If the angle is oustide the acceptable bounds then set rotation to 0
+    if (outputs.ShoulderAngleSpeed > 0 && shoulderSubsystem.getShoulderAngle() >= ShoulderSubsystem.Map.UPPER_LIMIT)
+    outputs.ShoulderAngleSpeed = Math.min(0, outputs.ShoulderAngleSpeed);
 
-if (outputs.ShoulderAngleSpeed < 0 && shoulderSubsystem.getShoulderAngle() <= ShoulderSubsystem.Map.LOWER_LIMIT)
-outputs.ShoulderAngleSpeed = Math.max(0, outputs.ShoulderAngleSpeed);
+    if (outputs.ShoulderAngleSpeed < 0 && shoulderSubsystem.getShoulderAngle() <= ShoulderSubsystem.Map.LOWER_LIMIT)
+    outputs.ShoulderAngleSpeed = Math.max(0, outputs.ShoulderAngleSpeed);
 
-        shoulderAngle1.set(outputs.ShoulderAngleSpeed);
-        shoulderAngle2.set(outputs.ShoulderAngleSpeed);
-
-    }
-  
+    shoulderAngle1.set(outputs.ShoulderAngleSpeed);
+    shoulderAngle2.set(outputs.ShoulderAngleSpeed);
+  }
 }
