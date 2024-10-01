@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Drive;
+package frc.robot.Subsystems.Drive;
 
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.sim.MotorSim;

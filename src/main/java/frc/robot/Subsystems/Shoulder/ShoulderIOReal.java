@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shoulder;
+package frc.robot.Subsystems.Shoulder;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;

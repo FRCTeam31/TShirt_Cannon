@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shoulder;
+package frc.robot.Subsystems.Shoulder;
 
 public class ShoulderIOSim implements IShoulderIO {
 

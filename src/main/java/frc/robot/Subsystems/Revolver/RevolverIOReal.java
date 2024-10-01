@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Revolver;
+package frc.robot.Subsystems.Revolver;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;

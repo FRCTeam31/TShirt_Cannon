@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Revolver;
+package frc.robot.Subsystems.Revolver;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -6,8 +6,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.Revolver.IRevolverIO.RevolverIOInputs;
-import frc.robot.subsystems.Revolver.IRevolverIO.RevolverIOOutputs;
+import frc.robot.Subsystems.Revolver.IRevolverIO.RevolverIOInputs;
+import frc.robot.Subsystems.Revolver.IRevolverIO.RevolverIOOutputs;
 import frc.robot.utilities.CTREConverter;
 
 public class RevolverSubsystem extends SubsystemBase {

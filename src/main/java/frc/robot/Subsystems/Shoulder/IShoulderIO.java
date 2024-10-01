@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shoulder;
+package frc.robot.Subsystems.Shoulder;
 
 import org.littletonrobotics.junction.AutoLog;
 

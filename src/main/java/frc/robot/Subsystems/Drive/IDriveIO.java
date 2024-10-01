@@ -1,8 +1,8 @@
-package frc.robot.subsystems.Drive;
+package frc.robot.Subsystems.Drive;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import frc.robot.subsystems.Drive.DriveSubsystem.DriveMode;
+import frc.robot.Subsystems.Drive.DriveSubsystem.DriveMode;
 
 public interface IDriveIO {
     @AutoLog

@@ -2,9 +2,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.Drive.DriveSubsystem;
-import frc.robot.subsystems.Revolver.RevolverSubsystem;
-import frc.robot.subsystems.Shoulder.ShoulderSubsystem;
+import frc.robot.Subsystems.Drive.DriveSubsystem;
+import frc.robot.Subsystems.Revolver.RevolverSubsystem;
+import frc.robot.Subsystems.Shoulder.ShoulderSubsystem;
 
 public class RobotContainer {
   public static DriveSubsystem Drive;

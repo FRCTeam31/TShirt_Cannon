@@ -1,12 +1,12 @@
-package frc.robot.subsystems.Shoulder;
+package frc.robot.Subsystems.Shoulder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.Shoulder.IShoulderIO.ShoulderIOInputs;
-import frc.robot.subsystems.Shoulder.IShoulderIO.ShoulderIOOutputs;
+import frc.robot.Subsystems.Shoulder.IShoulderIO.ShoulderIOInputs;
+import frc.robot.Subsystems.Shoulder.IShoulderIO.ShoulderIOOutputs;
 
 public class ShoulderSubsystem extends SubsystemBase {
   public static class Map {

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Revolver;
+package frc.robot.Subsystems.Revolver;
 
 import edu.wpi.first.wpilibj.simulation.PneumaticsBaseSim;
 import edu.wpi.first.wpilibj.simulation.SolenoidSim;
