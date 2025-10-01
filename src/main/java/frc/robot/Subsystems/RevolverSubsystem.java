@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utilities.CTREConverter;
@@ -99,24 +99,24 @@ public class RevolverSubsystem extends SubsystemBase {
 
   //#region Commands
 
-  public CommandBase fireSequenceCommand(int power) {
+  public Command fireSequenceCommand(int power) {
     return fireCommand(true)
       .andThen(Commands.waitSeconds(0.01 * power))
       .andThen(fireCommand(false));
   }
 
-  public CommandBase fireCommand(boolean open) {
+  public Command fireCommand(boolean open) {
     return this.runOnce(() -> setFireSolenoid(open));
   }
 
-  public CommandBase revolveForward(){
+  public Command revolveForward(){
     return this.runOnce(()->{
       motor.setSelectedSensorPosition(0);
       setRevolverPositionTarget(4096);
     });
   }
 
-  public CommandBase revolveBackward(){
+  public Command revolveBackward(){
     return this.runOnce(()->{
       motor.setSelectedSensorPosition(0);
       setRevolverPositionTarget(-4096);

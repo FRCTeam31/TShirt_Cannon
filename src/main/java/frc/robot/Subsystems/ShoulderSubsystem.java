@@ -10,7 +10,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -70,7 +70,7 @@ public class ShoulderSubsystem extends SubsystemBase {
 
   //#region Commands
 
-  public CommandBase controlWithTriggersCommand(CommandXboxController controller) {
+  public Command controlWithTriggersCommand(CommandXboxController controller) {
     return this.run(()->{
       double angleSpeed = MathUtil.applyDeadband((controller.getRawAxis(2) - 
         controller.getRawAxis(3)) * Map.SPEED_COEFF, 0.1);

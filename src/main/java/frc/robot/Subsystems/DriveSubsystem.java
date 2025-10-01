@@ -8,7 +8,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -68,7 +68,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   //#region Commands
 
-  public CommandBase driveArcadeCommand(CommandXboxController controller){
+  public Command driveArcadeCommand(CommandXboxController controller){
     return this.run(() -> {
       double speed = -MathUtil.applyDeadband(controller.getRawAxis(0), 0.1);
       double rotation = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
@@ -76,7 +76,7 @@ public class DriveSubsystem extends SubsystemBase {
     });
   }
 
-  public CommandBase driveTankCommand(CommandXboxController controller){
+  public Command driveTankCommand(CommandXboxController controller){
     return this.run(() -> {
       double speedLeft = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
       double speedRight = MathUtil.applyDeadband(-controller.getRawAxis(5), 0.1);
