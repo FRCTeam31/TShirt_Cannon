@@ -20,6 +20,8 @@ public class DriveSubsystem extends SubsystemBase {
     public static final int rightLeadingMotor_CAN = 3;
     public static final int rightFollowingMotor1_CAN = 12;
     public static final int rightFollowingMotor2_CAN = 13;
+
+    public static final int driveSpeedPercent = 0;
   }
 
   //comment
@@ -69,7 +71,7 @@ public class DriveSubsystem extends SubsystemBase {
     return this.run(() -> {
       double speed = -MathUtil.applyDeadband(controller.getRawAxis(0), 0.1);
       double rotation = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
-      driveArcade(speed, rotation);
+      driveArcade(speed * Map.driveSpeedPercent, rotation * Map.driveSpeedPercent);
     });
   }
 
@@ -77,7 +79,7 @@ public class DriveSubsystem extends SubsystemBase {
     return this.run(() -> {
       double speedLeft = MathUtil.applyDeadband(controller.getRawAxis(1), 0.1);
       double speedRight = MathUtil.applyDeadband(-controller.getRawAxis(5), 0.1);
-      driveTank(speedLeft, speedRight);
+      driveTank(speedLeft * Map.driveSpeedPercent, speedRight * Map.driveSpeedPercent);
     });
   }
 

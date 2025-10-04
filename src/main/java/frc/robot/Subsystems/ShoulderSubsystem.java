@@ -21,8 +21,10 @@ public class ShoulderSubsystem extends SubsystemBase {
     public static final int MOTOR1_CAN = 22;
     public static final int MOTOR2_CAN = 21;
     public static final int SHOULDERCODER_CAN = 20;
-    public static final double UPPER_LIMIT = 271.05;
-    public static final double LOWER_LIMIT = 224.47;
+    // public static final double UPPER_LIMIT = 271.05;
+    // public static final double LOWER_LIMIT = 224.47;
+    public static final double UPPER_LIMIT = -0.193115234375;
+    public static final double LOWER_LIMIT = -0.3828125;
 
     //Speed Coefficents
     public static final double SPEED_COEFF = 0.5;
@@ -60,6 +62,7 @@ public class ShoulderSubsystem extends SubsystemBase {
 
     //Current angle from the encoder
     var currentAngle = shoulderCoder.getAbsolutePosition().getValueAsDouble();
+    // System.out.println(currentAngle);
 
     // If the angle is oustide the acceptable bounds then set rotation to 0
     if (angleSpeed > 0 && currentAngle >= Map.UPPER_LIMIT)

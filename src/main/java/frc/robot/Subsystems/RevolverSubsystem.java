@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
@@ -29,8 +30,12 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final double MOTOR_kD = 0.0;
     public static final double MOTOR_kF = 0.0;
 
-    public static final double MOTOR_MAGIC_ACCEL = 2000; // Sensor units per 100ms, per second
-    public static final double MOTOR_MAGIC_CRUISE = 1500; // Sensor units per 100ms
+    // public static final double MOTOR_MAGIC_ACCEL = 2000; // Sensor units per 100ms, per second
+    // public static final double MOTOR_MAGIC_CRUISE = 1500; // Sensor units per 100ms
+    // public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
+
+    public static final double MOTOR_MAGIC_ACCEL = 25; // Sensor units per 100ms, per second
+    public static final double MOTOR_MAGIC_CRUISE = 5; // Sensor units per 100ms
     public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
 
     public static final int SOLENOID_CHANNEL = 1;
@@ -72,6 +77,7 @@ public class RevolverSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    System.out.println(motor.getSelectedSensorPosition());
     SmartDashboard.putNumber("Revolver Angle Pos", getRevolverRotation().getDegrees());
   }
 
@@ -96,6 +102,10 @@ public class RevolverSubsystem extends SubsystemBase {
     fireSolenoid.set(open);
   }
 
+  private boolean atTarget() {
+    return Math.abs(motor.getClosedLoopError()) < 100;
+  }
+
   //#region Commands
 
   public Command fireSequenceCommand(int power) {
@@ -109,18 +119,41 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   public Command revolveForward(){
-    return this.runOnce(()->{
+    return this.runOnce(() -> {
       motor.setSelectedSensorPosition(0);
-      setRevolverPositionTarget(4096);
+      setRevolverPositionTarget(4096 / 9);
     });
   }
 
   public Command revolveBackward(){
-    return this.runOnce(()->{
+    return this.runOnce(() -> {
       motor.setSelectedSensorPosition(0);
-      setRevolverPositionTarget(-4096);
+      setRevolverPositionTarget(-4096 / 9);
     });
   }
+  
+
+  // public Command revolveForward() {
+  //   return Commands.runOnce(() -> motor.setSelectedSensorPosition(0), this)
+  //     .andThen(
+  //       Commands.run(
+  //         () -> setRevolverPositionTarget(4096),
+  //         this
+  //       ).until(this::atTarget)
+  //       .withTimeout(3)
+  //     );
+  // }
+
+  // public Command revolveBackward() {
+  //   return Commands.runOnce(() -> motor.setSelectedSensorPosition(0), this)
+  //     .andThen(
+  //       Commands.run(
+  //         () -> setRevolverPositionTarget(-4096),
+  //         this
+  //       ).until(this::atTarget)
+  //       .withTimeout(3)
+  //     );
+  // }
 
   //#end
 }

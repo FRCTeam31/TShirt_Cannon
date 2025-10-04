@@ -27,7 +27,7 @@ public class RobotContainer {
   private void configureBindings() {
     controller = new CommandXboxController(0);
     
-    Drive.setDefaultCommand(Drive.driveTankCommand(controller));
+    // Drive.setDefaultCommand(Drive.driveTankCommand(controller));
     Shoulder.setDefaultCommand(Shoulder.controlWithTriggersCommand(controller));
     
     controller.rightBumper().onTrue(Revolver.revolveForward());
@@ -36,8 +36,8 @@ public class RobotContainer {
     // controller.b().onTrue(Revolver.fireSequenceCommand(25));
     // controller.y().onTrue(Revolver.fireSequenceCommand(50));
     // controller.x().onTrue(Revolver.fireSequenceCommand(100));
-    controller.a().onTrue(Revolver.fireCommand(true))
-      .onFalse(Revolver.fireCommand(false));
+    // controller.a().onTrue(Revolver.fireCommand(true))
+    //   .onFalse(Revolver.fireCommand(false));
   }
 
   public Command getAutonomousCommand() {
