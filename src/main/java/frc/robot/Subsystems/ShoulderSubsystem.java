@@ -6,7 +6,9 @@ package frc.robot.Subsystems;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,7 +30,8 @@ public class ShoulderSubsystem extends SubsystemBase {
 
   private WPI_VictorSPX shoulderAngle1;
   private WPI_VictorSPX shoulderAngle2;
-  private CANCoder shoulderCoder;
+  private CANcoder shoulderCoder;
+  private CANcoderConfiguration shoulderCoderConfig;
 
   /** Creates a new ShoulderSubsystem. */
   public ShoulderSubsystem() {
@@ -37,15 +40,17 @@ public class ShoulderSubsystem extends SubsystemBase {
     shoulderAngle1.setNeutralMode(NeutralMode.Brake);
     shoulderAngle2.setNeutralMode(NeutralMode.Brake);
 
-    shoulderCoder = new CANCoder(Map.SHOULDERCODER_CAN);
-    shoulderCoder.configFactoryDefault();
-    shoulderCoder.configSensorDirection(true);
+    shoulderCoder = new CANcoder(Map.SHOULDERCODER_CAN);
+
+    shoulderCoderConfig = new CANcoderConfiguration();
+    shoulderCoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    shoulderCoder.getConfigurator().apply(shoulderCoderConfig);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    var currentAngle = shoulderCoder.getAbsolutePosition();
+    var currentAngle = shoulderCoder.getAbsolutePosition().getValueAsDouble();
     SmartDashboard.putNumber("Shoulder Angle", currentAngle);
   }
 
@@ -54,7 +59,7 @@ public class ShoulderSubsystem extends SubsystemBase {
 
 
     //Current angle from the encoder
-    var currentAngle = shoulderCoder.getAbsolutePosition();
+    var currentAngle = shoulderCoder.getAbsolutePosition().getValueAsDouble();
 
     // If the angle is oustide the acceptable bounds then set rotation to 0
     if (angleSpeed > 0 && currentAngle >= Map.UPPER_LIMIT)
