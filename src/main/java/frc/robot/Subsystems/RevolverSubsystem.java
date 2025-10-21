@@ -30,13 +30,13 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final double MOTOR_kD = 0.0;
     public static final double MOTOR_kF = 0.0;
 
-    // public static final double MOTOR_MAGIC_ACCEL = 2000; // Sensor units per 100ms, per second
-    // public static final double MOTOR_MAGIC_CRUISE = 1500; // Sensor units per 100ms
-    // public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
+     public static final double MOTOR_MAGIC_ACCEL = 2000; // Sensor units per 100ms, per second
+     public static final double MOTOR_MAGIC_CRUISE = 1500; // Sensor units per 100ms
+     public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
 
-    public static final double MOTOR_MAGIC_ACCEL = 25; // Sensor units per 100ms, per second
-    public static final double MOTOR_MAGIC_CRUISE = 5; // Sensor units per 100ms
-    public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
+   // public static final double MOTOR_MAGIC_ACCEL = 25; // Sensor units per 100ms, per second
+   // public static final double MOTOR_MAGIC_CRUISE = 5; // Sensor units per 100ms
+   // public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
 
     public static final int SOLENOID_CHANNEL = 1;
   }
@@ -51,6 +51,7 @@ public class RevolverSubsystem extends SubsystemBase {
     motor.clearStickyFaults();
     motor.configFactoryDefault();
     motor.setNeutralMode(NeutralMode.Brake);
+    motor.setSensorPhase(true);
 
     // Configure Talon sensor
     motor.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.QuadEncoder, 0, 20);
