@@ -30,8 +30,8 @@ public class RobotContainer {
     // Drive.setDefaultCommand(Drive.driveTankCommand(controller));
     Shoulder.setDefaultCommand(Shoulder.controlWithTriggersCommand(controller));
     
-    controller.rightBumper().onTrue(Revolver.revolveForward());
-    controller.leftBumper().onTrue(Revolver.revolveBackward());
+    controller.rightBumper().onTrue(Revolver.revolveForward().andThen(() -> System.out.println("Right Bumper Pressed")));
+    controller.leftBumper().onTrue(Revolver.revolveBackward().andThen(() -> System.out.println("Left Bumper Pressed")));
 
     // controller.b().onTrue(Revolver.fireSequenceCommand(25));
     // controller.y().onTrue(Revolver.fireSequenceCommand(50));

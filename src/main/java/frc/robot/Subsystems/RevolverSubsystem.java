@@ -78,8 +78,8 @@ public class RevolverSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    System.out.println(motor.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Revolver Angle Pos", getRevolverRotation().getDegrees());
+    // System.out.println(motor.getSelectedSensorPosition());
+    // SmartDashboard.putNumber("Revolver Angle Pos", getRevolverRotation().getDegrees());
   }
 
   public Rotation2d getRevolverRotation() {
@@ -122,7 +122,9 @@ public class RevolverSubsystem extends SubsystemBase {
   public Command revolveForward(){
     return this.runOnce(() -> {
       motor.setSelectedSensorPosition(0);
-      setRevolverPositionTarget(4096 / 9);
+      System.out.println("Sensor Position: " + motor.getSelectedSensorPosition());
+      setRevolverPositionTarget(4096 / 9); // Might just be 4096
+      System.out.println("Done");
     });
   }
 
