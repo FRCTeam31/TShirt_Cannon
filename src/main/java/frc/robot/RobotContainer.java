@@ -33,6 +33,10 @@ public class RobotContainer {
     controller.rightBumper().onTrue(Revolver.revolveForward().andThen(() -> System.out.println("Right Bumper Pressed")));
     controller.leftBumper().onTrue(Revolver.revolveBackward().andThen(() -> System.out.println("Left Bumper Pressed")));
 
+    // Drive revolver motors while held
+    // controller.rightBumper().whileTrue(Revolver.runRevolverWhileHeld(true));
+    // controller.leftBumper().whileTrue(Revolver.runRevolverWhileHeld(false));
+
     // controller.b().onTrue(Revolver.fireSequenceCommand(25));
     // controller.y().onTrue(Revolver.fireSequenceCommand(50));
     // controller.x().onTrue(Revolver.fireSequenceCommand(100));

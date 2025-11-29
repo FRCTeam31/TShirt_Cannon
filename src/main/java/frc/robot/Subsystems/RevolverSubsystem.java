@@ -24,6 +24,7 @@ public class RevolverSubsystem extends SubsystemBase {
   public class Map {
     public static final int MOTOR_CAN = 8;
     public static final double MOTOR_SPEED_COEFF = 0.5;
+    public static final double MOTOR_REVOLVE_TIME = 0.74;
 
     public static final double MOTOR_kP = 1.4;
     public static final double MOTOR_kI = 0.0;
@@ -120,19 +121,35 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   public Command revolveForward(){
-    return this.runOnce(() -> {
-      motor.setSelectedSensorPosition(0);
-      System.out.println("Sensor Position: " + motor.getSelectedSensorPosition());
-      setRevolverPositionTarget(4096 / 9); // Might just be 4096
-      System.out.println("Done");
-    });
+    // return this.runOnce(() -> {
+    //   motor.setSelectedSensorPosition(0);
+    //   System.out.println("Sensor Position: " + motor.getSelectedSensorPosition());
+    //   setRevolverPositionTarget(4096); // Might just be 4096
+    //   System.out.println("Done");
+    // });
+    return this
+      .runOnce(() -> motor.set(ControlMode.PercentOutput, Map.MOTOR_SPEED_COEFF))
+      .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
+      .andThen(() -> motor.set(ControlMode.PercentOutput, 0));
+  }
+
+  public Command runRevolverWhileHeld(boolean forwards) {
+    double percent = forwards ? Map.MOTOR_SPEED_COEFF : -Map.MOTOR_SPEED_COEFF;
+
+    return this
+      .runOnce(() -> motor.set(ControlMode.PercentOutput, percent))
+      .finallyDo(() -> motor.set(ControlMode.PercentOutput, 0));
   }
 
   public Command revolveBackward(){
-    return this.runOnce(() -> {
-      motor.setSelectedSensorPosition(0);
-      setRevolverPositionTarget(-4096 / 9);
-    });
+    // return this.runOnce(() -> {
+    //   motor.setSelectedSensorPosition(0);
+    //   setRevolverPositionTarget(-4096);
+    // });
+    return this
+      .runOnce(() -> motor.set(ControlMode.PercentOutput, -Map.MOTOR_SPEED_COEFF))
+      .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
+      .andThen(() -> motor.set(ControlMode.PercentOutput, 0));
   }
   
 
