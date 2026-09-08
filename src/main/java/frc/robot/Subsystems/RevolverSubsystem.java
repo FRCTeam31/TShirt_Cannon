@@ -4,12 +4,16 @@
 
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
-import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
@@ -18,59 +22,87 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utilities.CTREConverter;
 
 public class RevolverSubsystem extends SubsystemBase {
   public class Map {
     public static final int MOTOR_CAN = 8;
-    public static final double MOTOR_SPEED_COEFF = 0.5;
-    public static final double MOTOR_REVOLVE_TIME = 0.74;
 
-    public static final double MOTOR_kP = 1.4;
-    public static final double MOTOR_kI = 0.0;
-    public static final double MOTOR_kD = 0.0;
-    public static final double MOTOR_kF = 0.0;
+    // The SparkFlex's built-in encoder sits on the MOTOR shaft, before the
+    // gearbox (unlike the old external Mag Encoder, which read the OUTPUT
+    // shaft directly at 1:1). 75 motor rotations = 1 revolver-output rotation.
+    // If there is any external gearing stacked on top of the internal 75:1,
+    // fold that ratio in here too (e.g. 75.0 * externalStageRatio).
+    public static final double GEARBOX_RATIO = 75.0;
 
-     public static final double MOTOR_MAGIC_ACCEL = 2000; // Sensor units per 100ms, per second
-     public static final double MOTOR_MAGIC_CRUISE = 1500; // Sensor units per 100ms
-     public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
+    public static final double MOTOR_SPEED_COEFF = 0.5; // TODO: re-tune - was set for the old motor/gearing
+    public static final double MOTOR_REVOLVE_TIME = 0.74; // TODO: re-time on the robot - motor + ratio changed
 
-   // public static final double MOTOR_MAGIC_ACCEL = 25; // Sensor units per 100ms, per second
-   // public static final double MOTOR_MAGIC_CRUISE = 5; // Sensor units per 100ms
-   // public static final int MOTOR_MAGIC_S_CURVE_STRENGTH = 2; // Range: 1-8
+    // Closed-loop gains for MAXMotion position control, in units of revolver
+    // OUTPUT-shaft rotations. The old Talon PIDF gains do NOT carry over -
+    // different motor, different controller, different native units.
+    // These are conservative placeholders; tune with the REV Hardware Client.
+    public static final double MOTOR_kP = 1.0; // TODO: tune
+    public static final double MOTOR_kI = 0.0; // TODO: tune
+    public static final double MOTOR_kD = 0.0; // TODO: tune
+
+    // MAXMotion is REV's equivalent of CTRE's Motion Magic. It's trapezoidal
+    // only - there's no direct equivalent of the old S-curve strength knob.
+    public static final double MOTOR_MAXMOTION_MAX_VELOCITY = 60.0; // RPM, at the OUTPUT shaft - TODO: tune
+    public static final double MOTOR_MAXMOTION_MAX_ACCEL = 60.0; // RPM/s, at the OUTPUT shaft - TODO: tune
+    public static final double MOTOR_MAXMOTION_ALLOWED_ERROR = 0.02; // output-shaft rotations
+
+    public static final double POSITION_TOLERANCE_ROTATIONS = 0.02; // used by atTarget()
+
+    // NEOs/NEO Vortex can pull far more stall current than the old motor.
+    // Strongly recommended - uncomment and set to whatever your PDH breaker allows.
+    // public static final int MOTOR_CURRENT_LIMIT_AMPS = 60;
 
     public static final int SOLENOID_CHANNEL = 1;
   }
 
-  private TalonSRX motor;
+  private SparkFlex motor;
+  private RelativeEncoder encoder;
+  private SparkClosedLoopController closedLoopController;
+  private double positionTargetRotations = 0.0;
+
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
 
   /** Creates a new RevolverSubsytem. */
   public RevolverSubsystem() {
-    motor = new TalonSRX(Map.MOTOR_CAN);
-    motor.clearStickyFaults();
-    motor.configFactoryDefault();
-    motor.setNeutralMode(NeutralMode.Brake);
-    motor.setSensorPhase(true);
+    motor = new SparkFlex(Map.MOTOR_CAN, MotorType.kBrushless);
+    motor.clearFaults();
 
-    // Configure Talon sensor
-    motor.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.QuadEncoder, 0, 20);
-    motor.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 20);
+    SparkFlexConfig config = new SparkFlexConfig();
+    config
+        .inverted(false) // TODO: flip if the revolver spins opposite to what positive commands expect
+        .idleMode(IdleMode.kBrake);
+        // .smartCurrentLimit(Map.MOTOR_CURRENT_LIMIT_AMPS); // see note above, recommended
 
-    // Configure PIDF for Motion Magic
-    motor.selectProfileSlot(0, 0);
-    motor.config_kP(0, Map.MOTOR_kP);
-    motor.config_kI(0, Map.MOTOR_kI);
-    motor.config_kD(0, Map.MOTOR_kD);
-    motor.config_kF(0, Map.MOTOR_kF);
+    config.encoder
+        // Scales the built-in encoder's motor-shaft rotations down to
+        // revolver OUTPUT-shaft rotations, accounting for the 75:1 gearbox.
+        .positionConversionFactor(1.0 / Map.GEARBOX_RATIO)
+        .velocityConversionFactor(1.0 / Map.GEARBOX_RATIO);
 
-    // Configure motion magic parameters
-    motor.configMotionAcceleration(Map.MOTOR_MAGIC_ACCEL);
-    motor.configMotionCruiseVelocity(Map.MOTOR_MAGIC_CRUISE);
-    motor.configMotionSCurveStrength(Map.MOTOR_MAGIC_S_CURVE_STRENGTH);
+    config.closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pid(Map.MOTOR_kP, Map.MOTOR_kI, Map.MOTOR_kD)
+        .outputRange(-1.0, 1.0);
 
-    motor.setSelectedSensorPosition(0);
+    config.closedLoop.maxMotion
+        .maxVelocity(Map.MOTOR_MAXMOTION_MAX_VELOCITY)
+        .maxAcceleration(Map.MOTOR_MAXMOTION_MAX_ACCEL)
+        .allowedClosedLoopError(Map.MOTOR_MAXMOTION_ALLOWED_ERROR);
+
+    // configure() replaces the old configFactoryDefault() + per-parameter config___()
+    // calls. kResetSafeParameters resets the controller to factory defaults first,
+    // then applies everything set above; kPersistParameters keeps it through a brownout.
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    encoder = motor.getEncoder();
+    closedLoopController = motor.getClosedLoopController();
+    encoder.setPosition(0);
 
     pcm = new PneumaticsControlModule(30);
     fireSolenoid = pcm.makeSolenoid(Map.SOLENOID_CHANNEL);
@@ -79,25 +111,33 @@ public class RevolverSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // System.out.println(motor.getSelectedSensorPosition());
+    // System.out.println(getRevolverRotation().getDegrees());
     // SmartDashboard.putNumber("Revolver Angle Pos", getRevolverRotation().getDegrees());
   }
 
   public Rotation2d getRevolverRotation() {
-    double currentdeg = CTREConverter.MagEncoderToDegrees(getRevolverPosition(), 9 * 10);
-    return Rotation2d.fromDegrees(currentdeg);
+    // encoder.getPosition() is already in OUTPUT-shaft rotations thanks to the
+    // positionConversionFactor above, so this is just a straight unit conversion now -
+    // the old CTREConverter.MagEncoderToDegrees() helper is no longer needed.
+    return Rotation2d.fromDegrees(encoder.getPosition() * 360.0);
   }
 
   public double getRevolverPosition() {
-    return motor.getSelectedSensorPosition();
+    // Output-shaft rotations (previously: raw Talon sensor ticks).
+    return encoder.getPosition();
   }
 
   public void setRevolverSpeed(double speed) {
-    motor.set(ControlMode.PercentOutput, speed * Map.MOTOR_SPEED_COEFF);
+    motor.set(speed * Map.MOTOR_SPEED_COEFF);
   }
 
-  public void setRevolverPositionTarget(double target) {
-    motor.set(ControlMode.MotionMagic, target);
+  public void setRevolverPositionTarget(double targetRotations) {
+    // targetRotations is in OUTPUT-shaft rotations (e.g. 1.0 = one full revolver
+    // turn) - NOT raw sensor ticks like the old Motion Magic target was.
+    positionTargetRotations = targetRotations;
+    closedLoopController.setReference(targetRotations, ControlType.kMAXMotionPositionControl);
+    // Note: newer REVLib releases (2026+) renamed setReference() to setSetpoint().
+    // setReference() is correct for the 2025-generation library.
   }
 
   public void setFireSolenoid(boolean open) {
@@ -105,7 +145,7 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   private boolean atTarget() {
-    return Math.abs(motor.getClosedLoopError()) < 100;
+    return Math.abs(encoder.getPosition() - positionTargetRotations) < Map.POSITION_TOLERANCE_ROTATIONS;
   }
 
   //#region Commands
@@ -122,42 +162,42 @@ public class RevolverSubsystem extends SubsystemBase {
 
   public Command revolveForward(){
     // return this.runOnce(() -> {
-    //   motor.setSelectedSensorPosition(0);
-    //   System.out.println("Sensor Position: " + motor.getSelectedSensorPosition());
-    //   setRevolverPositionTarget(4096); // Might just be 4096
+    //   encoder.setPosition(0);
+    //   System.out.println("Position: " + encoder.getPosition());
+    //   setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
     //   System.out.println("Done");
     // });
     return this
-      .runOnce(() -> motor.set(ControlMode.PercentOutput, Map.MOTOR_SPEED_COEFF))
+      .runOnce(() -> motor.set(Map.MOTOR_SPEED_COEFF))
       .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
-      .andThen(() -> motor.set(ControlMode.PercentOutput, 0));
+      .andThen(() -> motor.set(0));
   }
 
   public Command runRevolverWhileHeld(boolean forwards) {
     double percent = forwards ? Map.MOTOR_SPEED_COEFF : -Map.MOTOR_SPEED_COEFF;
 
     return this
-      .runOnce(() -> motor.set(ControlMode.PercentOutput, percent))
-      .finallyDo(() -> motor.set(ControlMode.PercentOutput, 0));
+      .runOnce(() -> motor.set(percent))
+      .finallyDo(() -> motor.set(0));
   }
 
   public Command revolveBackward(){
     // return this.runOnce(() -> {
-    //   motor.setSelectedSensorPosition(0);
-    //   setRevolverPositionTarget(-4096);
+    //   encoder.setPosition(0);
+    //   setRevolverPositionTarget(-1.0);
     // });
     return this
-      .runOnce(() -> motor.set(ControlMode.PercentOutput, -Map.MOTOR_SPEED_COEFF))
+      .runOnce(() -> motor.set(-Map.MOTOR_SPEED_COEFF))
       .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
-      .andThen(() -> motor.set(ControlMode.PercentOutput, 0));
+      .andThen(() -> motor.set(0));
   }
-  
+
 
   // public Command revolveForward() {
-  //   return Commands.runOnce(() -> motor.setSelectedSensorPosition(0), this)
+  //   return Commands.runOnce(() -> encoder.setPosition(0), this)
   //     .andThen(
   //       Commands.run(
-  //         () -> setRevolverPositionTarget(4096),
+  //         () -> setRevolverPositionTarget(1.0),
   //         this
   //       ).until(this::atTarget)
   //       .withTimeout(3)
@@ -165,10 +205,10 @@ public class RevolverSubsystem extends SubsystemBase {
   // }
 
   // public Command revolveBackward() {
-  //   return Commands.runOnce(() -> motor.setSelectedSensorPosition(0), this)
+  //   return Commands.runOnce(() -> encoder.setPosition(0), this)
   //     .andThen(
   //       Commands.run(
-  //         () -> setRevolverPositionTarget(-4096),
+  //         () -> setRevolverPositionTarget(-1.0),
   //         this
   //       ).until(this::atTarget)
   //       .withTimeout(3)
