@@ -5,20 +5,17 @@
 package frc.robot.Subsystems;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
+import com.revrobotics.PersistMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -45,13 +42,14 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final double MOTOR_kI = 0.0; // TODO: tune
     public static final double MOTOR_kD = 0.0; // TODO: tune
 
-    // MAXMotion is REV's equivalent of CTRE's Motion Magic. It's trapezoidal
-    // only - there's no direct equivalent of the old S-curve strength knob.
-    public static final double MOTOR_MAXMOTION_MAX_VELOCITY = 60.0; // RPM, at the OUTPUT shaft - TODO: tune
+    // MAXMotion is REV's equivalent of CTRE's Motion Magic (trapezoidal only -
+    // no direct equivalent of the old S-curve strength knob). As of the 2026
+    // REVLib release these MAXMotion parameters were renamed to be more
+    // descriptive: kMaxVelocity -> kCruiseVelocity, kAllowedClosedLoopError ->
+    // kAllowedProfileError.
+    public static final double MOTOR_MAXMOTION_CRUISE_VELOCITY = 60.0; // RPM, at the OUTPUT shaft - TODO: tune
     public static final double MOTOR_MAXMOTION_MAX_ACCEL = 60.0; // RPM/s, at the OUTPUT shaft - TODO: tune
-    public static final double MOTOR_MAXMOTION_ALLOWED_ERROR = 0.02; // output-shaft rotations
-
-    public static final double POSITION_TOLERANCE_ROTATIONS = 0.02; // used by atTarget()
+    public static final double MOTOR_MAXMOTION_ALLOWED_PROFILE_ERROR = 0.02; // output-shaft rotations
 
     // NEOs/NEO Vortex can pull far more stall current than the old motor.
     // Strongly recommended - uncomment and set to whatever your PDH breaker allows.
@@ -63,7 +61,6 @@ public class RevolverSubsystem extends SubsystemBase {
   private SparkFlex motor;
   private RelativeEncoder encoder;
   private SparkClosedLoopController closedLoopController;
-  private double positionTargetRotations = 0.0;
 
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
@@ -71,6 +68,8 @@ public class RevolverSubsystem extends SubsystemBase {
   /** Creates a new RevolverSubsytem. */
   public RevolverSubsystem() {
     motor = new SparkFlex(Map.MOTOR_CAN, MotorType.kBrushless);
+    // As of 2026, REVLib no longer auto-clears faults when the object is created,
+    // so this call is now the only thing clearing them - keep it.
     motor.clearFaults();
 
     SparkFlexConfig config = new SparkFlexConfig();
@@ -86,19 +85,22 @@ public class RevolverSubsystem extends SubsystemBase {
         .velocityConversionFactor(1.0 / Map.GEARBOX_RATIO);
 
     config.closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .feedbackSensor(com.revrobotics.spark.FeedbackSensor.kPrimaryEncoder)
         .pid(Map.MOTOR_kP, Map.MOTOR_kI, Map.MOTOR_kD)
         .outputRange(-1.0, 1.0);
 
     config.closedLoop.maxMotion
-        .maxVelocity(Map.MOTOR_MAXMOTION_MAX_VELOCITY)
+        .cruiseVelocity(Map.MOTOR_MAXMOTION_CRUISE_VELOCITY)
         .maxAcceleration(Map.MOTOR_MAXMOTION_MAX_ACCEL)
-        .allowedClosedLoopError(Map.MOTOR_MAXMOTION_ALLOWED_ERROR);
+        .allowedProfileError(Map.MOTOR_MAXMOTION_ALLOWED_PROFILE_ERROR);
 
-    // configure() replaces the old configFactoryDefault() + per-parameter config___()
-    // calls. kResetSafeParameters resets the controller to factory defaults first,
-    // then applies everything set above; kPersistParameters keeps it through a brownout.
-    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // configureAsync() is the current (2026) recommended way to apply config - it
+    // doesn't block the calling thread waiting for a CAN response the way the
+    // now-deprecated configure() does. kResetSafeParameters resets the controller
+    // to factory defaults first, then applies everything set above;
+    // kPersistParameters keeps it through a brownout. ResetMode/PersistMode are now
+    // shared enums in com.revrobotics rather than nested under SparkBase.
+    motor.configureAsync(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     encoder = motor.getEncoder();
     closedLoopController = motor.getClosedLoopController();
@@ -116,9 +118,9 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getRevolverRotation() {
-    // encoder.getPosition() is already in OUTPUT-shaft rotations thanks to the
-    // positionConversionFactor above, so this is just a straight unit conversion now -
-    // the old CTREConverter.MagEncoderToDegrees() helper is no longer needed.
+    // As of 2026, RelativeEncoder getters return a Signal<Double> instead of a
+    // plain double, so status can be checked with isValid()/getTimestamp(). We
+    // just pull the value out with a safe default here.
     return Rotation2d.fromDegrees(encoder.getPosition() * 360.0);
   }
 
@@ -134,10 +136,8 @@ public class RevolverSubsystem extends SubsystemBase {
   public void setRevolverPositionTarget(double targetRotations) {
     // targetRotations is in OUTPUT-shaft rotations (e.g. 1.0 = one full revolver
     // turn) - NOT raw sensor ticks like the old Motion Magic target was.
-    positionTargetRotations = targetRotations;
-    closedLoopController.setReference(targetRotations, ControlType.kMAXMotionPositionControl);
-    // Note: newer REVLib releases (2026+) renamed setReference() to setSetpoint().
-    // setReference() is correct for the 2025-generation library.
+    // setReference() was deprecated in favor of setSetpoint() in the 2026 release.
+    closedLoopController.setSetpoint(targetRotations, com.revrobotics.spark.SparkBase.ControlType.kMAXMotionPositionControl);
   }
 
   public void setFireSolenoid(boolean open) {
@@ -145,7 +145,10 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   private boolean atTarget() {
-    return Math.abs(encoder.getPosition() - positionTargetRotations) < Map.POSITION_TOLERANCE_ROTATIONS;
+    // 2026 REVLib added a built-in closed-loop status signal for this, so we no
+    // longer need to manually track the last commanded target and compare it
+    // against the encoder position ourselves.
+    return closedLoopController.isAtSetpoint();
   }
 
   //#region Commands
@@ -163,7 +166,7 @@ public class RevolverSubsystem extends SubsystemBase {
   public Command revolveForward(){
     // return this.runOnce(() -> {
     //   encoder.setPosition(0);
-    //   System.out.println("Position: " + encoder.getPosition());
+    //   System.out.println("Position: " + getRevolverPosition());
     //   setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
     //   System.out.println("Done");
     // });
