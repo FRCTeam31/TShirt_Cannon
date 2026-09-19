@@ -150,7 +150,7 @@ public class RevolverSubsystem extends SubsystemBase {
     return Math.abs(encoder.getPosition() - positionTargetRotations) < Map.POSITION_TOLERANCE_ROTATIONS;
   }
 
-  private double powerPercentToSolenoid(double percent) {
+  private double powerPercentToSolenoidOpenTime(double percent) {
     double clampedPercent = Math.max(0, Math.min(1, percent));
     return Map.MAX_FIRE_SOLENOID_OPEN_TIME_SECONDS * clampedPercent;
   }
@@ -164,7 +164,7 @@ public class RevolverSubsystem extends SubsystemBase {
    */
   public Command fireSequenceCommand(double percentPower) {
     return fireCommand(true)
-      .andThen(Commands.waitSeconds(powerPercentToSolenoid(percentPower)))
+      .andThen(Commands.waitSeconds(powerPercentToSolenoidOpenTime(percentPower)))
       .andThen(fireCommand(false));
   }
 
