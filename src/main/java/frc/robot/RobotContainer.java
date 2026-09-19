@@ -27,21 +27,21 @@ public class RobotContainer {
   private void configureBindings() {
     controller = new CommandXboxController(0);
     
-    // Drive.setDefaultCommand(Drive.driveTankCommand(controller));
+    Drive.setDefaultCommand(Drive.driveTankCommand(controller));
     Shoulder.setDefaultCommand(Shoulder.controlWithTriggersCommand(controller));
     
     controller.rightBumper().onTrue(Revolver.revolveForward().andThen(() -> System.out.println("Right Bumper Pressed")));
     controller.leftBumper().onTrue(Revolver.revolveBackward().andThen(() -> System.out.println("Left Bumper Pressed")));
 
     // Drive revolver motors while held
-    // controller.rightBumper().whileTrue(Revolver.runRevolverWhileHeld(true));
-    // controller.leftBumper().whileTrue(Revolver.runRevolverWhileHeld(false));
+    controller.rightBumper().whileTrue(Revolver.runRevolverWhileHeld(true));
+    controller.leftBumper().whileTrue(Revolver.runRevolverWhileHeld(false));
 
-    // controller.b().onTrue(Revolver.fireSequenceCommand(25));
-    // controller.y().onTrue(Revolver.fireSequenceCommand(50));
-    // controller.x().onTrue(Revolver.fireSequenceCommand(100));
-    // controller.a().onTrue(Revolver.fireCommand(true))
-    //   .onFalse(Revolver.fireCommand(false));
+    controller.b().onTrue(Revolver.fireSequenceCommand(0.33));  // 1/3 Power
+    controller.y().onTrue(Revolver.fireSequenceCommand(0.66));  // 2/3 Power
+    controller.x().onTrue(Revolver.fireSequenceCommand(1));     // 3/3 Power
+    controller.a().onTrue(Revolver.fireCommand(true))
+      .onFalse(Revolver.fireCommand(false));
   }
 
   public Command getAutonomousCommand() {

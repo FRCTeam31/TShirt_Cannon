@@ -58,6 +58,8 @@ public class RevolverSubsystem extends SubsystemBase {
     // public static final int MOTOR_CURRENT_LIMIT_AMPS = 60;
 
     public static final int SOLENOID_CHANNEL = 1;
+
+    public static final double MAX_FIRE_SOLENOID_OPEN_TIME_SECONDS = 0.4; // 400ms 
   }
 
   private SparkFlex motor;
@@ -148,11 +150,21 @@ public class RevolverSubsystem extends SubsystemBase {
     return Math.abs(encoder.getPosition() - positionTargetRotations) < Map.POSITION_TOLERANCE_ROTATIONS;
   }
 
+  private double powerPercentToSolenoid(double percent) {
+    double clampedPercent = Math.max(0, Math.min(1, percent));
+    return Map.MAX_FIRE_SOLENOID_OPEN_TIME_SECONDS * clampedPercent;
+  }
+
   //#region Commands
 
-  public Command fireSequenceCommand(int power) {
+  /**
+   * Returns a command to fire the cannon with a specified percentage power between 0 and 1
+   * @param percentPower
+   * @return
+   */
+  public Command fireSequenceCommand(double percentPower) {
     return fireCommand(true)
-      .andThen(Commands.waitSeconds(0.01 * power))
+      .andThen(Commands.waitSeconds(powerPercentToSolenoid(percentPower)))
       .andThen(fireCommand(false));
   }
 
