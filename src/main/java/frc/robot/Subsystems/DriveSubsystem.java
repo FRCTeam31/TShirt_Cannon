@@ -21,7 +21,7 @@ public class DriveSubsystem extends SubsystemBase {
     public static final int rightFollowingMotor1_CAN = 12;
     public static final int rightFollowingMotor2_CAN = 13;
 
-    public static final int driveSpeedPercent = 0;
+    public static final int driveSpeedPercent = 1;
   }
 
   //comment

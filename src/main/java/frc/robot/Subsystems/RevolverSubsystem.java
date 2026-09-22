@@ -32,9 +32,9 @@ public class RevolverSubsystem extends SubsystemBase {
     // shaft directly at 1:1). 75 motor rotations = 1 revolver-output rotation.
     // If there is any external gearing stacked on top of the internal 75:1,
     // fold that ratio in here too (e.g. 75.0 * externalStageRatio).
-    public static final double GEARBOX_RATIO = 75.0;
+    public static final double GEARBOX_RATIO = 45.0;
 
-    public static final double MOTOR_SPEED_COEFF = 0.5; // TODO: re-tune - was set for the old motor/gearing
+    public static final double MOTOR_SPEED_COEFF = 0.25; // TODO: re-tune - was set for the old motor/gearing
     public static final double MOTOR_REVOLVE_TIME = 0.74; // TODO: re-time on the robot - motor + ratio changed
 
     // Closed-loop gains for MAXMotion position control, in units of revolver
@@ -47,8 +47,8 @@ public class RevolverSubsystem extends SubsystemBase {
 
     // MAXMotion is REV's equivalent of CTRE's Motion Magic. It's trapezoidal
     // only - there's no direct equivalent of the old S-curve strength knob.
-    public static final double MOTOR_MAXMOTION_MAX_VELOCITY = 60.0; // RPM, at the OUTPUT shaft - TODO: tune
-    public static final double MOTOR_MAXMOTION_MAX_ACCEL = 60.0; // RPM/s, at the OUTPUT shaft - TODO: tune
+    public static final double MOTOR_MAXMOTION_MAX_VELOCITY = 120.0; // RPM, at the OUTPUT shaft - TODO: tune
+    public static final double MOTOR_MAXMOTION_MAX_ACCEL = 120.0; // RPM/s, at the OUTPUT shaft - TODO: tune
     public static final double MOTOR_MAXMOTION_ALLOWED_ERROR = 0.02; // output-shaft rotations
 
     public static final double POSITION_TOLERANCE_ROTATIONS = 0.02; // used by atTarget()
@@ -60,6 +60,8 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final int SOLENOID_CHANNEL = 1;
 
     public static final double MAX_FIRE_SOLENOID_OPEN_TIME_SECONDS = 0.4; // 400ms 
+
+    public static final int NUMBER_OF_BARRELS = 10;
   }
 
   private SparkFlex motor;
@@ -78,7 +80,7 @@ public class RevolverSubsystem extends SubsystemBase {
     SparkFlexConfig config = new SparkFlexConfig();
     config
         .inverted(false) // TODO: flip if the revolver spins opposite to what positive commands expect
-        .idleMode(IdleMode.kBrake);
+        .idleMode(IdleMode.kCoast);
         // .smartCurrentLimit(Map.MOTOR_CURRENT_LIMIT_AMPS); // see note above, recommended
 
     config.encoder
@@ -100,7 +102,7 @@ public class RevolverSubsystem extends SubsystemBase {
     // configure() replaces the old configFactoryDefault() + per-parameter config___()
     // calls. kResetSafeParameters resets the controller to factory defaults first,
     // then applies everything set above; kPersistParameters keeps it through a brownout.
-    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
     encoder = motor.getEncoder();
     closedLoopController = motor.getClosedLoopController();
@@ -173,16 +175,14 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   public Command revolveForward(){
-    // return this.runOnce(() -> {
-    //   encoder.setPosition(0);
-    //   System.out.println("Position: " + encoder.getPosition());
-    //   setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
-    //   System.out.println("Done");
-    // });
-    return this
-      .runOnce(() -> motor.set(Map.MOTOR_SPEED_COEFF))
-      .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
-      .andThen(() -> motor.set(0));
+    return this.runOnce(() -> {
+      encoder.setPosition(0);
+      setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
+    });
+    // return this
+    //   .runOnce(() -> motor.set(Map.MOTOR_SPEED_COEFF))
+    //   .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
+    //   .andThen(() -> motor.set(0));
   }
 
   public Command runRevolverWhileHeld(boolean forwards) {
@@ -194,14 +194,14 @@ public class RevolverSubsystem extends SubsystemBase {
   }
 
   public Command revolveBackward(){
-    // return this.runOnce(() -> {
-    //   encoder.setPosition(0);
-    //   setRevolverPositionTarget(-1.0);
-    // });
-    return this
-      .runOnce(() -> motor.set(-Map.MOTOR_SPEED_COEFF))
-      .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
-      .andThen(() -> motor.set(0));
+    return this.runOnce(() -> {
+      encoder.setPosition(0);
+      setRevolverPositionTarget(-1.0);
+    });
+    // return this
+    //   .runOnce(() -> motor.set(-Map.MOTOR_SPEED_COEFF))
+    //   .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
+    //   .andThen(() -> motor.set(0));
   }
 
 
