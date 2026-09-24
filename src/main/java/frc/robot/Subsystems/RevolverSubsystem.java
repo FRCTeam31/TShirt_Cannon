@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utilities.RevolverBarrelExclusionUtility;
+import frc.robot.utilities.RevolverCrashDetectionUtility;
 
 public class RevolverSubsystem extends SubsystemBase {
   public class Map {
@@ -71,6 +73,11 @@ public class RevolverSubsystem extends SubsystemBase {
 
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
+
+  private final RevolverBarrelExclusionUtility revolverBarrelExclusionUtility
+          = new RevolverBarrelExclusionUtility(9);
+  private final RevolverCrashDetectionUtility revolverCrashDetectionUtility
+          = new RevolverCrashDetectionUtility(0, motor, Commands.none());
 
   /** Creates a new RevolverSubsytem. */
   public RevolverSubsystem() {
@@ -179,10 +186,15 @@ public class RevolverSubsystem extends SubsystemBase {
       encoder.setPosition(0);
       setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
     });
-    // return this
-    //   .runOnce(() -> motor.set(Map.MOTOR_SPEED_COEFF))
-    //   .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
-    //   .andThen(() -> motor.set(0));
+
+//    if (revolverBarrelExclusionUtility.canRevolveForwards()) {
+//      return this.runOnce(() -> {
+//        encoder.setPosition(0);
+//        setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
+//      });
+//    } else {
+//      return Commands.none();
+//    }
   }
 
   public Command runRevolverWhileHeld(boolean forwards) {
@@ -198,10 +210,19 @@ public class RevolverSubsystem extends SubsystemBase {
       encoder.setPosition(0);
       setRevolverPositionTarget(-1.0);
     });
-    // return this
-    //   .runOnce(() -> motor.set(-Map.MOTOR_SPEED_COEFF))
-    //   .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
-    //   .andThen(() -> motor.set(0));
+
+//    if (revolverBarrelExclusionUtility.canRevolveBackwards()) {
+//      return this.runOnce(() -> {
+//        encoder.setPosition(0);
+//        setRevolverPositionTarget(-1.0); // one full revolver rotation - adjust to your indexing geometry
+//      });
+//    } else {
+//      return Commands.none();
+//    }
+  }
+
+  public Command revolveOnceInAutoDirection() {
+    return revolverBarrelExclusionUtility.autoRevolve(this::revolveForward, this::revolveBackward);
   }
 
 
