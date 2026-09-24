@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 
 public class RevolverSubsystem extends SubsystemBase {
   public class Map {
@@ -47,9 +48,9 @@ public class RevolverSubsystem extends SubsystemBase {
 
     // MAXMotion is REV's equivalent of CTRE's Motion Magic. It's trapezoidal
     // only - there's no direct equivalent of the old S-curve strength knob.
-    public static final double MOTOR_MAXMOTION_MAX_VELOCITY = 120.0; // RPM, at the OUTPUT shaft - TODO: tune
-    public static final double MOTOR_MAXMOTION_MAX_ACCEL = 120.0; // RPM/s, at the OUTPUT shaft - TODO: tune
-    public static final double MOTOR_MAXMOTION_ALLOWED_ERROR = 0.02; // output-shaft rotations
+    public static final double MOTOR_MAXMOTION_MAX_VELOCITY = 120.0 * 1.5; // RPM, at the OUTPUT shaft - TODO: tune
+    public static final double MOTOR_MAXMOTION_MAX_ACCEL = 120.0 * 2.0; // RPM/s, at the OUTPUT shaft - TODO: tune
+    public static final double MOTOR_MAXMOTION_ALLOWED_ERROR = 0.007; // output-shaft rotations
 
     public static final double POSITION_TOLERANCE_ROTATIONS = 0.02; // used by atTarget()
 
@@ -68,6 +69,7 @@ public class RevolverSubsystem extends SubsystemBase {
   private RelativeEncoder encoder;
   private SparkClosedLoopController closedLoopController;
   private double positionTargetRotations = 0.0;
+  private double revolverNominalTarget = 0.0;
 
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
@@ -176,9 +178,12 @@ public class RevolverSubsystem extends SubsystemBase {
 
   public Command revolveForward(){
     return this.runOnce(() -> {
-      encoder.setPosition(0);
-      setRevolverPositionTarget(1.0); // one full revolver rotation - adjust to your indexing geometry
-    });
+      // encoder.setPosition(0);
+      if (revolverNominalTarget < 9.0) {
+        revolverNominalTarget += 1.0;
+      }
+      setRevolverPositionTarget(revolverNominalTarget); // one full revolver rotation - adjust to your indexing geometry
+    }).withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     // return this
     //   .runOnce(() -> motor.set(Map.MOTOR_SPEED_COEFF))
     //   .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
@@ -195,9 +200,11 @@ public class RevolverSubsystem extends SubsystemBase {
 
   public Command revolveBackward(){
     return this.runOnce(() -> {
-      encoder.setPosition(0);
-      setRevolverPositionTarget(-1.0);
-    });
+      if (revolverNominalTarget - 1.0 > 0.0) {
+        revolverNominalTarget -= 1.0;
+      }
+      setRevolverPositionTarget(revolverNominalTarget);
+    }).withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     // return this
     //   .runOnce(() -> motor.set(-Map.MOTOR_SPEED_COEFF))
     //   .andThen(Commands.waitSeconds(Map.MOTOR_REVOLVE_TIME))
