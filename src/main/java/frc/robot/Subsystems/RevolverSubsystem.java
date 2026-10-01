@@ -65,6 +65,8 @@ public class RevolverSubsystem extends SubsystemBase {
     public static final double MAX_FIRE_SOLENOID_OPEN_TIME_SECONDS = 0.4; // 400ms 
 
     public static final int NUMBER_OF_BARRELS = 10;
+
+    public static final double BACK_REVOLVE_AMOUNT_ON_CRASH_ROTATIONS = 0.3;
   }
 
   private SparkFlex motor;
@@ -72,6 +74,7 @@ public class RevolverSubsystem extends SubsystemBase {
   private SparkClosedLoopController closedLoopController;
   private double positionTargetRotations = 0.0;
   private double revolverNominalTarget = 0.0;
+  private int revolverMovementDirection = 0;
 
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
@@ -122,7 +125,11 @@ public class RevolverSubsystem extends SubsystemBase {
     revolverCrashDetectionUtility = new RevolverCrashDetectionUtility(60, motor); // TODO: Check current
     revolverCrashDetectionUtility.getCrashTrigger().onTrue(this.runOnce(() -> {
       motor.stopMotor();
-      setRevolverPositionTarget(revolverNominalTarget - 0.3);
+      setRevolverPositionTarget(
+              revolverNominalTarget -
+                      Map.BACK_REVOLVE_AMOUNT_ON_CRASH_ROTATIONS * revolverMovementDirection
+                      // Move opposite direction of crash or nowhere in case of no movement direction
+      );
     }));
   }
 
@@ -195,6 +202,7 @@ public class RevolverSubsystem extends SubsystemBase {
         revolverNominalTarget += 1.0;
       }
       setRevolverPositionTarget(revolverNominalTarget); // one full revolver rotation - adjust to your indexing geometry
+      revolverMovementDirection = 1;
     }).withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     // return this
     //   .runOnce(() -> motor.set(Map.MOTOR_SPEED_COEFF))
@@ -216,6 +224,7 @@ public class RevolverSubsystem extends SubsystemBase {
         revolverNominalTarget -= 1.0;
       }
       setRevolverPositionTarget(revolverNominalTarget);
+      revolverMovementDirection = -1;
     }).withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     // return this
     //   .runOnce(() -> motor.set(-Map.MOTOR_SPEED_COEFF))
