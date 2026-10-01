@@ -11,15 +11,19 @@ public class RevolverCrashDetectionUtility {
     private final SparkFlex motor;
     private final Trigger crashTrigger = new Trigger(this::hasCrashed);
 
-    public RevolverCrashDetectionUtility(double maxCurrent, SparkFlex motor, Command crashCommand) {
+    private static final double maxRPMToConsiderCrash = 10;
+
+    public RevolverCrashDetectionUtility(double maxCurrent, SparkFlex motor) {
         this.maxCurrent = maxCurrent;
         this.motor = motor;
-        crashTrigger.onTrue(crashCommand);
+    }
+
+    public Trigger getCrashTrigger() {
+        return crashTrigger;
     }
 
     public boolean hasCrashed() {
-        return motor.getOutputCurrent() > maxCurrent;
+        return  Math.abs(motor.getOutputCurrent()) > maxCurrent &&
+                Math.abs(motor.getEncoder().getVelocity()) < maxRPMToConsiderCrash;
     }
-
-    // Still WIP, ran out of time but this is pretty much it
 }

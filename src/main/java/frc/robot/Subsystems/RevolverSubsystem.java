@@ -76,10 +76,9 @@ public class RevolverSubsystem extends SubsystemBase {
   private Solenoid fireSolenoid;
   private PneumaticsControlModule pcm;
 
-  private final RevolverBarrelExclusionUtility revolverBarrelExclusionUtility
-          = new RevolverBarrelExclusionUtility(9);
-  private final RevolverCrashDetectionUtility revolverCrashDetectionUtility
-          = new RevolverCrashDetectionUtility(0, motor, Commands.none());
+//  private final RevolverBarrelExclusionUtility revolverBarrelExclusionUtility
+//          = new RevolverBarrelExclusionUtility(9);
+  private final RevolverCrashDetectionUtility revolverCrashDetectionUtility;
 
   /** Creates a new RevolverSubsytem. */
   public RevolverSubsystem() {
@@ -119,6 +118,12 @@ public class RevolverSubsystem extends SubsystemBase {
 
     pcm = new PneumaticsControlModule(30);
     fireSolenoid = pcm.makeSolenoid(Map.SOLENOID_CHANNEL);
+
+    revolverCrashDetectionUtility = new RevolverCrashDetectionUtility(60, motor); // TODO: Check current
+    revolverCrashDetectionUtility.getCrashTrigger().onTrue(Commands.runOnce(() -> {
+      motor.stopMotor();
+      setRevolverPositionTarget(revolverNominalTarget - 0.3);
+    }));
   }
 
   @Override
@@ -218,9 +223,9 @@ public class RevolverSubsystem extends SubsystemBase {
     //   .andThen(() -> motor.set(0));
   }
 
-    public Command revolveOnceInAutoDirection() {
-        return revolverBarrelExclusionUtility.autoRevolve(this::revolveForward, this::revolveBackward);
-    }
+//    public Command revolveOnceInAutoDirection() {
+//        return revolverBarrelExclusionUtility.autoRevolve(this::revolveForward, this::revolveBackward);
+//    }
 
 
   // public Command revolveForward() {
