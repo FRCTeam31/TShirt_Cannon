@@ -198,7 +198,7 @@ public class RevolverSubsystem extends SubsystemBase {
   public Command revolveForward(){
     return this.runOnce(() -> {
       // encoder.setPosition(0);
-      if (revolverNominalTarget < 9.0) {
+      if (revolverNominalTarget < Map.NUMBER_OF_BARRELS - 1) {
         revolverNominalTarget += 1.0;
       }
       setRevolverPositionTarget(revolverNominalTarget); // one full revolver rotation - adjust to your indexing geometry
