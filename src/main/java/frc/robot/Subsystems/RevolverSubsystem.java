@@ -120,7 +120,7 @@ public class RevolverSubsystem extends SubsystemBase {
     fireSolenoid = pcm.makeSolenoid(Map.SOLENOID_CHANNEL);
 
     revolverCrashDetectionUtility = new RevolverCrashDetectionUtility(60, motor); // TODO: Check current
-    revolverCrashDetectionUtility.getCrashTrigger().onTrue(Commands.runOnce(() -> {
+    revolverCrashDetectionUtility.getCrashTrigger().onTrue(this.runOnce(() -> {
       motor.stopMotor();
       setRevolverPositionTarget(revolverNominalTarget - 0.3);
     }));
